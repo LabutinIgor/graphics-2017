@@ -7,10 +7,8 @@
 
 class MainView {
 public:
-    MainView(GLuint programID);
+    MainView();
     void show();
-
-    GLuint programID;
 };
 
 

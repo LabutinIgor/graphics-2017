@@ -2,13 +2,12 @@ cmake_minimum_required(VERSION 3.7)
 project(hw01_mandelbrot)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "task-01/bin")
 
 #find_package(OpenGL REQUIRED)
 #find_package(glm REQUIRED)
 #include_directories(${GLM_INCLUDE_DIRS})
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/task-01/bin")
 
 # Disable building extras we won't need (pure C++ project)
 set(NANOGUI_BUILD_EXAMPLE OFF CACHE BOOL " " FORCE)
@@ -25,15 +24,17 @@ set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
 add_definitions(${NANOGUI_EXTRA_DEFS})
 
 # On top of adding the path to nanogui/include, you may need extras
-include_directories(${NANOGUI_EXTRA_INCS})
+include_directories(nanogui/include)
+include_directories(nanogui/ext/glfw/include)
+include_directories(nanogui/ext/nanovg/src)
+include_directories(nanogui/ext/eigen)
 
 
 set(SOURCE_FILES
         task-01/src/main.cpp
         task-01/src/MainView.cpp
         task-01/src/MainView.h
-        task-01/src/ShadersLoader.cpp
-        task-01/src/ShadersLoader.h)
+        task-01/src/MandelbrotGLCanvas.cpp task-01/src/MandelbrotGLCanvas.h)
 
 add_executable(hw01_mandelbrot ${SOURCE_FILES})
 target_link_libraries(hw01_mandelbrot nanogui ${NANOGUI_EXTRA_LIBS})
