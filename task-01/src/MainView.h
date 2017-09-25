@@ -4,6 +4,7 @@
 
 
 #include <OpenGL/OpenGL.h>
+#include <nanogui/nanogui.h>
 
 class MainView {
 public:

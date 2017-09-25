@@ -1,16 +1,18 @@
 #version 330 core
 
-//uniform sampler1D colors_1d;
+uniform sampler1D colors_1d;
+uniform int max_iter;
+uniform vec2 center_pos;
+uniform float scale;
 in vec2 pos;
 out vec4 color;
 
 void main() {
-    vec2 pos_norm = vec2((pos.x + 1) / 2, (pos.y + 1) / 2);
-
+    vec2 pos_norm = pos * exp(scale) + center_pos;
+    pos_norm = vec2((pos_norm.x + 1) / 2, (pos_norm.y + 1) / 2);
     float x0 = pos_norm.x * 3.5 - 2.5;
     float y0 = pos_norm.y * 2 - 1;
-    int max_iter = 100;
-    int threshold = 100000;
+    int threshold = 10000;
     int i;
     float x = 0, y = 0, new_x;
     for (i = 0; i < max_iter; i++) {
