@@ -4,6 +4,8 @@
 
 #include <nanogui/nanogui.h>
 
+using handleType = std::unique_ptr<uint8_t[], void(*)(void*)>;
+
 class MandelbrotGLCanvas : public nanogui::GLCanvas {
 public:
     MandelbrotGLCanvas(nanogui::Widget* parent);
@@ -20,6 +22,9 @@ private:
     int mMaxIter = 100;
     nanogui::Vector2f mCenterPos = nanogui::Vector2f(0, 0);
     float mScale = 1.0;
+    GLuint mTextureId = 0;
+
+    handleType loadTexture(const std::string& fileName);
 };
 
 
