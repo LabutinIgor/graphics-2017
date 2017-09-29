@@ -28,7 +28,7 @@ MandelbrotGLCanvas::MandelbrotGLCanvas(nanogui::Widget* parent) : nanogui::GLCan
     loadTexture("../resources/palette.png");
 }
 
-handleType MandelbrotGLCanvas::loadTexture(const std::string& fileName) {
+void MandelbrotGLCanvas::loadTexture(const std::string& fileName) {
     if (mTextureId) {
         glDeleteTextures(1, &mTextureId);
         mTextureId = 0;
@@ -69,13 +69,13 @@ handleType MandelbrotGLCanvas::loadTexture(const std::string& fileName) {
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    return textureData;
 }
 
 void MandelbrotGLCanvas::drawGL() {
     mShader.bind();
     glBindTexture(GL_TEXTURE_1D, mTextureId);
     mShader.setUniform("max_iter", mMaxIter);
+    mShader.setUniform("threshold", mThreshold);
     mShader.setUniform("center_pos", mCenterPos);
     mShader.setUniform("scale", mScale);
     mShader.drawIndexed(GL_TRIANGLES, 0, 2);
@@ -101,4 +101,12 @@ bool MandelbrotGLCanvas::mouseDragEvent(const nanogui::Vector2i& p, const nanogu
     mCenterPos = nanogui::Vector2f(mCenterPos.x() - ((float) rel.x()) / width() * exp(mScale) * 2,
                                    mCenterPos.y() + ((float) rel.y()) / height() * exp(mScale) * 2);
     return nanogui::Widget::mouseDragEvent(p, rel, button, modifiers);
+}
+
+void MandelbrotGLCanvas::setIterationsCnt(float x) {
+    mMaxIter = (int) (400 * x);
+}
+
+void MandelbrotGLCanvas::setThreshold(float x) {
+    mThreshold = (int) (20 * x);
 }

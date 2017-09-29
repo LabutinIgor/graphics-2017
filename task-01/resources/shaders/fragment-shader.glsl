@@ -2,6 +2,7 @@
 
 uniform sampler1D colors_1d;
 uniform int max_iter;
+uniform int threshold;
 uniform vec2 center_pos;
 uniform float scale;
 in vec2 pos;
@@ -12,7 +13,6 @@ void main() {
     pos_norm = vec2((pos_norm.x + 1) / 2, (pos_norm.y + 1) / 2);
     float x0 = pos_norm.x * 3.5 - 2.5;
     float y0 = pos_norm.y * 2 - 1;
-    int threshold = 10000;
     int i;
     float x = 0, y = 0, new_x;
     for (i = 0; i < max_iter; i++) {
@@ -29,6 +29,5 @@ void main() {
         col = col + 1 - log((log(x * x + y * y) / 2) / log(2)) / log(2);
     }
 
-//    color = vec4(col / max_iter, col / max_iter, col / max_iter, 1);
     color = texture(colors_1d, col / max_iter, 0);
 }

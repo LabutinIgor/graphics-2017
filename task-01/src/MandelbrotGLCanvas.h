@@ -16,15 +16,18 @@ public:
     virtual bool scrollEvent(const nanogui::Vector2i& p, const nanogui::Vector2f& rel) override;
     virtual bool mouseDragEvent(const nanogui::Vector2i& p, const nanogui::Vector2i& rel,
                                 int button, int modifiers) override;
+    void setIterationsCnt(float x);
+    void setThreshold(float x);
 
 private:
     nanogui::GLShader mShader;
     int mMaxIter = 100;
+    int mThreshold = 10000;
     nanogui::Vector2f mCenterPos = nanogui::Vector2f(0, 0);
     float mScale = 1.0;
     GLuint mTextureId = 0;
 
-    handleType loadTexture(const std::string& fileName);
+    void loadTexture(const std::string& fileName);
 };
 
 
