@@ -2,7 +2,6 @@
 #include <stb_image.h>
 #include <cstdint>
 #include <memory>
-#include <utility>
 
 #include "MandelbrotGLCanvas.h"
 
@@ -87,11 +86,10 @@ MandelbrotGLCanvas::~MandelbrotGLCanvas() {
 
 bool MandelbrotGLCanvas::scrollEvent(const nanogui::Vector2i& p, const nanogui::Vector2f& rel) {
     float newScale = mScale + rel.y() / 100;
+    nanogui::Vector2f p0(((float) p.x() - this->mPos.x()) / width(), ((float) p.y() - this->mPos.y()) / height());
 
-    mCenterPos = nanogui::Vector2f(mCenterPos.x() - (((float) p.x()) / width() - 0.5) *
-                                                    (exp(newScale) - exp(mScale)) * 2,
-                                   mCenterPos.y() + (((float) p.y()) / height() - 0.5) *
-                                                    (exp(newScale) - exp(mScale)) * 2);
+    mCenterPos = nanogui::Vector2f(mCenterPos.x() + (p0.x() - 0.5) * (exp(mScale) - exp(newScale)) * 2,
+                                   mCenterPos.y() - (p0.y() - 0.5) * (exp(mScale) - exp(newScale)) * 2);
     mScale = newScale;
     return nanogui::Widget::scrollEvent(p, rel);
 }

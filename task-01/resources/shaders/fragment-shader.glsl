@@ -26,7 +26,7 @@ void main() {
 
     float col = i;
     if (i < max_iter) {
-        col = col + 1 - log((log(x * x + y * y) / 2) / log(2)) / log(2);
+        col = col + 1 - log((log(x * x + y * y) / 2) / log(2.0)) / log(2.0);
     }
 
     color = texture(colors_1d, col / max_iter, 0);
