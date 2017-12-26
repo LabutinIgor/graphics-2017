@@ -21,8 +21,8 @@ public:
 
 private:
     nanogui::GLShader mShader;
-    int mMaxIter = 100;
-    int mThreshold = 10000;
+    int mMaxIter = 200;
+    int mThreshold = 10;
     nanogui::Vector2f mCenterPos = nanogui::Vector2f(0, 0);
     float mScale = 1.0;
     GLuint mTextureId = 0;
