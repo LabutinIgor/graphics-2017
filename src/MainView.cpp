@@ -18,43 +18,14 @@ void MainView::show() {
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
 
-//    GLuint VertexArrayID;
-//    glGenVertexArrays(1, &VertexArrayID);
-//    glBindVertexArray(VertexArrayID);
-
     programShadowMapID = loadShaders("../resources/shaders/shadow_map_vertex_shader.glsl",
                                      "../resources/shaders/shadow_map_fragment_shader.glsl");
 
     depthMatrixID = glGetUniformLocation(programShadowMapID, "matrixVP");
 
 
-
-//    // Load it into a VBO
-//
-//
-//    glGenBuffers(1, &vertexbuffer);
-//    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-//    glBufferData(GL_ARRAY_BUFFER, staticObject.pos.size() * sizeof(glm::vec3), &staticObject.pos[0], GL_STATIC_DRAW);
-//
-//
-//    // Generate a buffer for the indices as well
-//
-//    glGenBuffers(1, &elementbuffer);
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, staticObject.ids.size() * sizeof(glm::uvec3), &staticObject.ids[0],
-//                 GL_STATIC_DRAW);
-
-
-    // ---------------------------------------------
-    // Render to Texture - specific code begins here
-    // ---------------------------------------------
-
-    // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-
     glGenFramebuffers(1, &framebufferID);
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-
-    // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
 
     glGenTextures(1, &depthTexture);
     glBindTexture(GL_TEXTURE_2D, depthTexture);
@@ -68,10 +39,8 @@ void MainView::show() {
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
-    // No color output in the bound framebuffer, only depth.
     glDrawBuffer(GL_NONE);
 
-    // Always check that our framebuffer is ok
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Error in Framebuffer\n";
         exit(1);
@@ -265,7 +234,3 @@ void MainView::drawToScreen() {
     dynamicObject.draw();
     planeObject.draw();
 }
-
-
-
-
