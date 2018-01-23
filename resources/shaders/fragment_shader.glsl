@@ -12,7 +12,7 @@ uniform float pointLightPow;
 uniform float dirLightPow;
 uniform vec3 dirLightDirection;
 
-uniform sampler2DShadow shadowMap;
+uniform sampler2D shadowMap;
 
 layout(location = 0) out vec3 color;
 
@@ -30,11 +30,11 @@ void main() {
     vec3 colorSpecular1 = pow(clamp(dot(n, h1), 0, 1), 30.0f) * objSC;
 
 
-    float visibility = texture(shadowMap, 0.5 * (1 + vec3(shadowCoord.xy, (shadowCoord.z) / shadowCoord.w)));
-//	float bias = 0.005;
-//    float visibility = 1.0;
-//    if ( texture( shadowMap, (shadowCoord.xy/shadowCoord.w) ).z  <  (shadowCoord.z-bias)/shadowCoord.w ) {
-//       visibility = 0.5;
-//    }
-	color = colorDiffuse + colorSpecular + visibility * (colorDiffuse1 + colorSpecular1);
+	float bias = 0.005;
+    float visibility = 1.0;
+    if (0.5 * (1 + shadowCoord.z) - texture(shadowMap, 0.5 * (1 + shadowCoord.xy)).x > bias) {
+       visibility = 0.0;
+    }
+
+	color = (colorDiffuse + colorSpecular) + visibility * (colorDiffuse1 + colorSpecular1);
 }

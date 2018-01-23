@@ -70,11 +70,11 @@ private:
                                     [](double time) -> glm::vec3 {
                                         return glm::vec3(0, 0, 0);
                                     });
-    PointLight pointLight = PointLight(1.0,
+    PointLight pointLight = PointLight(0.5,
                                        [](double time) -> glm::vec3 {
                                            return glm::vec3(sin(time), 1, cos(time));
                                        });
-    DirectionalLight directionalLight = DirectionalLight(1.0, glm::vec3(3, 3, 0), glm::vec3(-1, -1, 0));
+    DirectionalLight directionalLight = DirectionalLight(0.5, glm::vec3(3, 3, 1), glm::vec3(-3, -3, -1));
     GLint depthMatrixID;
     GLuint framebufferID = 0;
     GLuint depthTexture;
