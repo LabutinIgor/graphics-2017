@@ -43,4 +43,4 @@ gen
 .gitignore
 .idea/
 cmake-build-debug/
-external/
+bin/
