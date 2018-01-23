@@ -7,9 +7,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 find_package(OpenGL REQUIRED)
 
-include_directories(
-        .
-)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(OPENGL_LIBRARY
+            ${OPENGL_LIBRARY}
+            -lGL -lGLU -lXrandr -lXext -lX11 -lrt
+            ${CMAKE_DL_LIBS}
+            ${GLFW_LIBRARIES}
+            )
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(OPENGL_LIBRARY
+            ${OPENGL_LIBRARY}
+            ${CMAKE_DL_LIBS}
+            ${GLFW_LIBRARIES}
+            )
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 find_package(glm REQUIRED)
 include_directories(include ${GLM_INCLUDE_DIRS})
@@ -36,6 +47,12 @@ target_link_libraries(GLEW ${OPENGL_LIBRARY} ${EXTRA_LIBS})
 
 
 add_executable(Scene3D
-        src/main.cpp)
+        src/main.cpp
+        src/MainView.cpp
+        src/MainView.h
+        src/load_shaders.cpp
+        src/load_shaders.h
+        src/Object3D.cpp
+        src/Object3D.h)
 
 target_link_libraries(Scene3D ${OPENGL_LIBRARY} glfw GLEW)
