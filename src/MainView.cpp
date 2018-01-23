@@ -195,8 +195,8 @@ void MainView::draw() {
     }
 
     matrixVPShadowMap = glm::ortho<float>(-10, 10, -10, 10, -10, 20) *
-                        glm::lookAt(glm::vec3(2, 2, 0),
-                                    glm::vec3(0, 0, 0),
+                        glm::lookAt(directionalLight.pos,
+                                    directionalLight.pos + directionalLight.direction,
                                     glm::vec3(0, 1, 0));
     drawToShadowMap();
     drawToScreen();
@@ -240,8 +240,22 @@ void MainView::drawToScreen() {
     scaleMatrix = glm::scale(glm::mat4(1.f), glm::tvec3<float>(c, c, c));
     glm::mat4 matrixVP = projectionMatrix * cameraMatrix * rotationMatrix * scaleMatrix;
 
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+
+    glm::mat4 invViewMatr = glm::inverse(cameraMatrix * rotationMatrix * scaleMatrix);
+    glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
+
     glUniformMatrix4fv(matrixVPID, 1, GL_FALSE, &matrixVP[0][0]);
     glUniformMatrix4fv(matrixVPShadowMapID, 1, GL_FALSE, &matrixVPShadowMap[0][0]);
+
+    glUniform3fv(glGetUniformLocation(programID, "pointLightPos"), 1,
+                 glm::value_ptr(pointLight.trajectory((curTime - startTime) / 2000.0)));
+    glUniform3fv(glGetUniformLocation(programID, "cameraPos"), 1, glm::value_ptr(cameraPos));
+    glUniform1f(glGetUniformLocation(programID, "pointLightPow"), pointLight.power);
+    glUniform3fv(glGetUniformLocation(programID, "dirLightDirection"), 1, glm::value_ptr(directionalLight.direction));
+    glUniform1f(glGetUniformLocation(programID, "dirLightPow"), directionalLight.power);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthTexture);

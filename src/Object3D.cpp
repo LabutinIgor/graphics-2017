@@ -72,8 +72,8 @@ void Object3D::draw() {
 
     modelMatrix = getModelMatrix((curTime - startTime) / 2000.0);
     glUniformMatrix4fv(glGetUniformLocation(programID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
-//    glUniform3fv(glGetUniformLocation(programID, "objDC"), 1, glm::value_ptr(diffuseColor));
-//    glUniform3fv(glGetUniformLocation(programID, "objSC"), 1, glm::value_ptr(specularColor));
+    glUniform3fv(glGetUniformLocation(programID, "objDC"), 1, glm::value_ptr(diffuseColor));
+    glUniform3fv(glGetUniformLocation(programID, "objSC"), 1, glm::value_ptr(specularColor));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idsID);
     glDrawElements(GL_TRIANGLES, 3 * ids.size(), GL_UNSIGNED_INT, nullptr);

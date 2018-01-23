@@ -20,6 +20,8 @@
 #include "load_shaders.h"
 #include "MainView.h"
 #include "Object3D.h"
+#include "PointLight.h"
+#include "DirectionalLight.h"
 //#include "PointLight.h"
 //#include "DirectionalLight.h"
 
@@ -68,13 +70,12 @@ private:
                                     [](double time) -> glm::vec3 {
                                         return glm::vec3(0, 0, 0);
                                     });
-//    PointLight pointLight = PointLight(1.0,
-//                                       [](double time) -> glm::vec3 {
-//                                           return glm::vec3(sin(time), 1, cos(time));
-//                                       });
+    PointLight pointLight = PointLight(1.0,
+                                       [](double time) -> glm::vec3 {
+                                           return glm::vec3(sin(time), 1, cos(time));
+                                       });
+    DirectionalLight directionalLight = DirectionalLight(1.0, glm::vec3(3, 3, 0), glm::vec3(-1, -1, 0));
     GLint depthMatrixID;
-    GLuint vertexbuffer;
-    GLuint elementbuffer;
     GLuint framebufferID = 0;
     GLuint depthTexture;
     GLint matrixVPID;

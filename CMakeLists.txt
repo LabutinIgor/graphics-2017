@@ -53,6 +53,10 @@ add_executable(Scene3D
         src/load_shaders.cpp
         src/load_shaders.h
         src/Object3D.cpp
-        src/Object3D.h)
+        src/Object3D.h
+        src/PointLight.cpp
+        src/PointLight.h
+        src/DirectionalLight.cpp
+        src/DirectionalLight.h)
 
 target_link_libraries(Scene3D ${OPENGL_LIBRARY} glfw GLEW)
