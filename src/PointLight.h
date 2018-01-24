@@ -7,6 +7,7 @@
 class PointLight {
 public:
     PointLight(float power, glm::vec3(* trajectory)(double));
+    void draw();
     float power;
     glm::vec3 (* trajectory)(double);
 };

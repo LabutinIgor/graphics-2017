@@ -16,12 +16,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <FrameBuffer.h>
 
 #include "load_shaders.h"
 #include "MainView.h"
 #include "Object3D.h"
 #include "PointLight.h"
-//#include "DirectionalLight.h"
+#include "controls.hpp"
 
 class MainView {
 public:
@@ -35,32 +36,25 @@ private:
     void drawToGBuffer();
     void drawGBufferToScreen();
     void drawToScreen();
+    void initGBuffer();
 
     GLFWwindow* window;
     GLuint programID;
-    GLuint programShadowMapID;
+    GLuint programGBufferID;
 
-//    glm::mat4 projectionMatrix;
-//    glm::mat4 cameraMatrix;
-//    glm::mat4 scaleMatrix;
-//    glm::mat4 rotationMatrix;
-//    glm::mat4 matrixVPShadowMap;
-//    double scaleCoefficient = 1;
-//    bool mousePressed = false;
-//    double previousMousePositionX;
-//    double previousMousePositionY;
+    FrameBuffer buffer = FrameBuffer(1024, 768, FrameBuffer::depth32);
 
     long long startTime;
 
-//    Object3D staticObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(1, 0, 0), glm::vec3(1, 0, 0),
-//                                     [](double time) -> glm::vec3 {
-//                                         return glm::vec3(0, 0, 0);
-//                                     });
-//    Object3D dynamicObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
-//                                      [](double time) -> glm::vec3 {
-//                                          return glm::vec3(0.3 * sin(time), 0.3 * cos(time), 0);
-//                                      });
-    Object3D planeObject = Object3D("../resources/sponza.obj", glm::vec3(0, 1, 0), glm::vec3(0, 0.5, 0),
+    Object3D staticObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(1, 0, 0), glm::vec3(1, 0, 0),
+                                     [](double time) -> glm::vec3 {
+                                         return glm::vec3(0, 0, 0);
+                                     });
+    Object3D dynamicObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
+                                      [](double time) -> glm::vec3 {
+                                          return glm::vec3(0.3 * sin(time), 0.3 * cos(time), 0);
+                                      });
+    Object3D sceneObject = Object3D("../resources/sponza.obj", glm::vec3(0, 1, 0), glm::vec3(0, 0.5, 0),
                                     [](double time) -> glm::vec3 {
                                         return glm::vec3(0, -1, 0);
                                     });
@@ -69,6 +63,12 @@ private:
                                            return glm::vec3(sin(time), 1, cos(time));
                                        });
     GLint matrixVPID;
+
+    GLuint quad_VertexArrayID;
+    GLuint vertexBufferID;
+    GLuint drawGBufferProgramID;
+
+//    int currentTexture = 0;
 
 };
 

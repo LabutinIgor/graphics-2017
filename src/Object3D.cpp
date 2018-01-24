@@ -36,9 +36,8 @@ glm::mat4 Object3D::getModelMatrix(double time) {
     return glm::translate(glm::mat4(1), trajectory(time));
 }
 
-void Object3D::init(GLuint programID, GLuint programShadowMapID) {
-    this->programID = programID;
-    this->programShadowMapID = programShadowMapID;
+void Object3D::init(GLuint programGBufferID) {
+    this->programGBufferID = programGBufferID;
     glGenVertexArrays(1, &verticesID);
     glBindVertexArray(verticesID);
 
@@ -60,7 +59,7 @@ void Object3D::init(GLuint programID, GLuint programShadowMapID) {
     startTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 }
 
-void Object3D::draw() {
+void Object3D::drawToGBuffer() {
     struct timeval tp;
     gettimeofday(&tp, NULL);
     long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
@@ -69,33 +68,15 @@ void Object3D::draw() {
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, posID);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
 
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, normalsID);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     modelMatrix = getModelMatrix((curTime - startTime) / 2000.0);
-    glUniformMatrix4fv(glGetUniformLocation(programID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniform3fv(glGetUniformLocation(programID, "objDC"), 1, glm::value_ptr(diffuseColor));
-    glUniform3fv(glGetUniformLocation(programID, "objSC"), 1, glm::value_ptr(specularColor));
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idsID);
-    glDrawElements(GL_TRIANGLES, 3 * ids.size(), GL_UNSIGNED_INT, nullptr);
-}
-
-void Object3D::drawToShadowMap() {
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-
-    modelMatrix = getModelMatrix((curTime - startTime) / 2000.0);
-    glUniformMatrix4fv(glGetUniformLocation(programShadowMapID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
-
-    glBindVertexArray(verticesID);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, posID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glUniformMatrix4fv(glGetUniformLocation(programGBufferID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniform3fv(glGetUniformLocation(programGBufferID, "objDC"), 1, glm::value_ptr(diffuseColor));
+    glUniform3fv(glGetUniformLocation(programGBufferID, "objSC"), 1, glm::value_ptr(specularColor));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idsID);
     glDrawElements(GL_TRIANGLES, 3 * ids.size(), GL_UNSIGNED_INT, nullptr);

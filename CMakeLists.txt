@@ -28,6 +28,7 @@ include_directories(include ${GLM_INCLUDE_DIRS})
 add_subdirectory(external/glfw-3.1.2)
 
 include_directories(
+        external/
         external/glfw-3.1.2/include/GLFW/
         external/glew-1.13.0/include/
 )
@@ -58,6 +59,8 @@ add_executable(Deferred
         src/Object3D.h
         src/PointLight.cpp
         src/PointLight.h
+        external/FrameBuffer.cpp
+        external/FrameBuffer.h
         )
 
 target_link_libraries(Deferred ${OPENGL_LIBRARY} glfw GLEW)

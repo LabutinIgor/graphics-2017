@@ -17,9 +17,8 @@ class Object3D {
 public:
     Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor, glm::vec3(* trajectory)(double));
     glm::mat4 getModelMatrix(double time);
-    void init(GLuint programID, GLuint programShadowMapID);
-    void draw();
-    void drawToShadowMap();
+    void init(GLuint programGBufferID);
+    void drawToGBuffer();
 
     glm::vec3 diffuseColor;
     glm::vec3 specularColor;
@@ -34,12 +33,7 @@ public:
     GLuint posID;
     GLuint idsID;
     GLuint normalsID;
-    GLint modelMatrixID;
-    GLint diffuseColorID;
-    GLint specularColorID;
-    GLint modelMatrixShadowMapID;
-    GLuint programID;
-    GLuint programShadowMapID;
+    GLuint programGBufferID;
 
     glm::mat4 modelMatrix;
 
