@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(Scene3D)
+project(Deferred)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -46,8 +46,10 @@ add_library(GLEW STATIC
 target_link_libraries(GLEW ${OPENGL_LIBRARY} ${EXTRA_LIBS})
 
 
-add_executable(Scene3D
+add_executable(Deferred
         src/main.cpp
+        src/controls.cpp
+        src/controls.hpp
         src/MainView.cpp
         src/MainView.h
         src/load_shaders.cpp
@@ -56,7 +58,6 @@ add_executable(Scene3D
         src/Object3D.h
         src/PointLight.cpp
         src/PointLight.h
-        src/DirectionalLight.cpp
-        src/DirectionalLight.h)
+        )
 
-target_link_libraries(Scene3D ${OPENGL_LIBRARY} glfw GLEW)
+target_link_libraries(Deferred ${OPENGL_LIBRARY} glfw GLEW)

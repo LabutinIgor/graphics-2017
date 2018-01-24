@@ -1,5 +1,6 @@
 
 #include <sys/time.h>
+#include <iostream>
 #include "Object3D.h"
 
 Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor,
@@ -14,15 +15,19 @@ Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specu
         }
         std::istringstream line(l);
         char t;
-        line >> t;
-        if (t == 'v') {
-            float x, y, z;
-            line >> x >> y >> z;
-            pos.push_back(glm::vec3(x, y, z));
-        } else if (t == 'f') {
-            int id1, id2, id3;
-            line >> id1 >> id2 >> id3;
-            ids.push_back(glm::uvec3(id1 - 1, id2 - 1, id3 - 1));
+        if (line >> t) {
+            if (t == 'v') {
+                float x, y, z;
+                line >> x >> y >> z;
+                pos.push_back(glm::vec3(x, y, z));
+            } else if (t == 'f') {
+                int id1, id2, id3;
+                line >> id1 >> id2;
+                while (line >> id3) {
+                    ids.push_back(glm::uvec3(id1 - 1, id2 - 1, id3 - 1));
+                    id2 = id3;
+                }
+            }
         }
     }
 }

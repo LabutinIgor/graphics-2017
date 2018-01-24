@@ -21,8 +21,6 @@
 #include "MainView.h"
 #include "Object3D.h"
 #include "PointLight.h"
-#include "DirectionalLight.h"
-//#include "PointLight.h"
 //#include "DirectionalLight.h"
 
 class MainView {
@@ -33,54 +31,45 @@ public:
 private:
     void initGlfwWindow();
     void initGlew();
-    void initMVPMatrices();
-    void setMouseCallbacks();
-    void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-    void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
     void draw();
-    void drawToShadowMap();
+    void drawToGBuffer();
+    void drawGBufferToScreen();
     void drawToScreen();
-    void updateRotation(double currentMousePositionX, double currentMousePositionY);
 
     GLFWwindow* window;
     GLuint programID;
     GLuint programShadowMapID;
 
-    glm::mat4 projectionMatrix;
-    glm::mat4 cameraMatrix;
-    glm::mat4 scaleMatrix;
-    glm::mat4 rotationMatrix;
-    glm::mat4 matrixVPShadowMap;
-    double scaleCoefficient = 1;
-    bool mousePressed = false;
-    double previousMousePositionX;
-    double previousMousePositionY;
+//    glm::mat4 projectionMatrix;
+//    glm::mat4 cameraMatrix;
+//    glm::mat4 scaleMatrix;
+//    glm::mat4 rotationMatrix;
+//    glm::mat4 matrixVPShadowMap;
+//    double scaleCoefficient = 1;
+//    bool mousePressed = false;
+//    double previousMousePositionX;
+//    double previousMousePositionY;
 
     long long startTime;
 
-    Object3D staticObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(1, 0, 0), glm::vec3(1, 0, 0),
-                                     [](double time) -> glm::vec3 {
-                                         return glm::vec3(0, 0, 0);
-                                     });
-    Object3D dynamicObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
-                                      [](double time) -> glm::vec3 {
-                                          return glm::vec3(0.3 * sin(time), 0.3 * cos(time), 0);
-                                      });
-    Object3D planeObject = Object3D("../resources/plane.obj", glm::vec3(0, 1, 0), glm::vec3(0, 0.5, 0),
+//    Object3D staticObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(1, 0, 0), glm::vec3(1, 0, 0),
+//                                     [](double time) -> glm::vec3 {
+//                                         return glm::vec3(0, 0, 0);
+//                                     });
+//    Object3D dynamicObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
+//                                      [](double time) -> glm::vec3 {
+//                                          return glm::vec3(0.3 * sin(time), 0.3 * cos(time), 0);
+//                                      });
+    Object3D planeObject = Object3D("../resources/sponza.obj", glm::vec3(0, 1, 0), glm::vec3(0, 0.5, 0),
                                     [](double time) -> glm::vec3 {
-                                        return glm::vec3(0, 0, 0);
+                                        return glm::vec3(0, -1, 0);
                                     });
     PointLight pointLight = PointLight(0.5,
                                        [](double time) -> glm::vec3 {
                                            return glm::vec3(sin(time), 1, cos(time));
                                        });
-    DirectionalLight directionalLight = DirectionalLight(0.5, glm::vec3(3, 3, 1), glm::vec3(-3, -3, -1));
-    GLint depthMatrixID;
-    GLuint framebufferID = 0;
-    GLuint depthTexture;
     GLint matrixVPID;
-    GLint matrixVPShadowMapID;
-    GLint ShadowMapID;
+
 };
 
 

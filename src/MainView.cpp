@@ -1,7 +1,9 @@
 
 
 #include <sys/time.h>
+
 #include "MainView.h"
+#include "controls.hpp"
 
 MainView::MainView() {}
 
@@ -9,55 +11,51 @@ void MainView::show() {
     initGlfwWindow();
     initGlew();
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    glfwPollEvents();
-    glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+    initWindow(window);
 
     glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
 
-    programShadowMapID = loadShaders("../resources/shaders/shadow_map_vertex_shader.glsl",
-                                     "../resources/shaders/shadow_map_fragment_shader.glsl");
+    programShadowMapID = loadShaders("../resources/shaders/g_buffer_vertex_shader.glsl",
+                                     "../resources/shaders/g_buffer_fragment_shader.glsl");
 
-    depthMatrixID = glGetUniformLocation(programShadowMapID, "matrixVP");
-
-
-    glGenFramebuffers(1, &framebufferID);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-
-    glGenTextures(1, &depthTexture);
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
-
-    glDrawBuffer(GL_NONE);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Error in Framebuffer\n";
-        exit(1);
-    }
+//    depthMatrixID = glGetUniformLocation(programShadowMapID, "matrixVP");
+//
+//
+//    glGenFramebuffers(1, &framebufferID);
+//    glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+//
+//    glGenTextures(1, &depthTexture);
+//    glBindTexture(GL_TEXTURE_2D, depthTexture);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+//
+//    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+//
+//    glDrawBuffer(GL_NONE);
+//
+//    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+//        std::cerr << "Error in Framebuffer\n";
+//        exit(1);
+//    }
 
 
     programID = loadShaders("../resources/shaders/vertex_shader.glsl", "../resources/shaders/fragment_shader.glsl");
 
     matrixVPID = glGetUniformLocation(programID, "matrixVP");
-    matrixVPShadowMapID = glGetUniformLocation(programID, "dirLightVP");
-    ShadowMapID = glGetUniformLocation(programID, "shadowMap");
 
-    initMVPMatrices();
-    setMouseCallbacks();
+//    matrixVPShadowMapID = glGetUniformLocation(programID, "dirLightVP");
+//    ShadowMapID = glGetUniformLocation(programID, "shadowMap");
 
-    staticObject.init(programID, programShadowMapID);
-    dynamicObject.init(programID, programShadowMapID);
+//    staticObject.init(programID, programShadowMapID);
+//    dynamicObject.init(programID, programShadowMapID);
     planeObject.init(programID, programShadowMapID);
 
     struct timeval tp;
@@ -85,7 +83,7 @@ void MainView::initGlfwWindow() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(1024, 768, "Scene3D", NULL, NULL);
+    window = glfwCreateWindow(1024, 768, "Deferred", NULL, NULL);
     if (window == NULL) {
         std::cerr << "Failed to open GLFW window.\n";
         glfwTerminate();
@@ -103,71 +101,8 @@ void MainView::initGlew() {
     }
 }
 
-void MainView::initMVPMatrices() {
-    projectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-    cameraMatrix = glm::lookAt(
-            glm::vec3(0, 0, 10),
-            glm::vec3(0, 0, 0),
-            glm::vec3(0, 1, 0)
-    );
-    rotationMatrix = glm::mat4(1.f);
-    scaleMatrix = glm::mat4(1.f);
-}
-
-void MainView::setMouseCallbacks() {
-    glfwSetWindowUserPointer(window, this);
-    auto buttonCallback = [](GLFWwindow* window, int button, int action, int mods) {
-        static_cast<MainView*>(glfwGetWindowUserPointer(window))->mouseButtonCallback(window, button, action, mods);
-    };
-    glfwSetMouseButtonCallback(window, buttonCallback);
-
-    auto scrollCallback = [](GLFWwindow* window, double xoffset, double yoffset) {
-        static_cast<MainView*>(glfwGetWindowUserPointer(window))->scrollCallback(window, xoffset, yoffset);
-    };
-    glfwSetScrollCallback(window, scrollCallback);
-
-}
-
-void MainView::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        if (action == GLFW_PRESS) {
-            glfwGetCursorPos(window, &previousMousePositionX, &previousMousePositionY);
-            mousePressed = true;
-        } else {
-            if (action == GLFW_RELEASE) {
-                mousePressed = false;
-            }
-        }
-    }
-}
-
-void MainView::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-    scaleCoefficient += yoffset * 0.001;
-}
-
-void MainView::updateRotation(double currentMousePositionX, double currentMousePositionY) {
-    double dx = previousMousePositionX - currentMousePositionX;
-    double dy = previousMousePositionY - currentMousePositionY;
-
-    double r = sqrt(dx * dx + dy * dy);
-    rotationMatrix = glm::eulerAngleXYZ((float) (dy * r * 0.001f), (float) (dx * r * 0.001f), 0.0f) * rotationMatrix;
-
-    previousMousePositionX = currentMousePositionX;
-    previousMousePositionY = currentMousePositionY;
-}
-
 void MainView::draw() {
-    if (mousePressed) {
-        double currentMousePositionX, currentMousePositionY;
-        glfwGetCursorPos(window, &currentMousePositionX, &currentMousePositionY);
-        updateRotation(currentMousePositionX, currentMousePositionY);
-    }
-
-    matrixVPShadowMap = glm::ortho<float>(-10, 10, -10, 10, -10, 20) *
-                        glm::lookAt(directionalLight.pos,
-                                    directionalLight.pos + directionalLight.direction,
-                                    glm::vec3(0, 1, 0));
-    drawToShadowMap();
+    drawToGBuffer();
     drawToScreen();
 
 
@@ -175,23 +110,25 @@ void MainView::draw() {
     glfwPollEvents();
 }
 
-void MainView::drawToShadowMap() {
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-    glViewport(0, 0, 1024, 1024);
+void MainView::drawToGBuffer() {
+//    glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+//    glViewport(0, 0, 1024, 1024);
+//
+//    glEnable(GL_CULL_FACE);
+//    glCullFace(GL_BACK);
+//
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//
+//    glUseProgram(programShadowMapID);
+//
+//
+//    staticObject.drawToGBuffer();
+//    dynamicObject.drawToGBuffer();
+//    planeObject.drawToGBuffer();
+}
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+void MainView::drawGBufferToScreen() {
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glUseProgram(programShadowMapID);
-
-
-    glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &matrixVPShadowMap[0][0]);
-
-    staticObject.drawToShadowMap();
-    dynamicObject.drawToShadowMap();
-    planeObject.drawToShadowMap();
 }
 
 void MainView::drawToScreen() {
@@ -205,32 +142,31 @@ void MainView::drawToScreen() {
 
     glUseProgram(programID);
 
-    float c = exp(scaleCoefficient);
-    scaleMatrix = glm::scale(glm::mat4(1.f), glm::tvec3<float>(c, c, c));
-    glm::mat4 matrixVP = projectionMatrix * cameraMatrix * rotationMatrix * scaleMatrix;
+    computeMatricesFromInputs();
+    glm::mat4 projectionMatrix = getProjectionMatrix();
+    glm::mat4 viewMatrix = getViewMatrix();
+    glm::mat4 matrixVP = projectionMatrix * viewMatrix;
 
     struct timeval tp;
     gettimeofday(&tp, NULL);
     long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
-    glm::mat4 invViewMatr = glm::inverse(cameraMatrix * rotationMatrix * scaleMatrix);
+    glm::mat4 invViewMatr = glm::inverse(viewMatrix);
     glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
 
     glUniformMatrix4fv(matrixVPID, 1, GL_FALSE, &matrixVP[0][0]);
-    glUniformMatrix4fv(matrixVPShadowMapID, 1, GL_FALSE, &matrixVPShadowMap[0][0]);
 
     glUniform3fv(glGetUniformLocation(programID, "pointLightPos"), 1,
                  glm::value_ptr(pointLight.trajectory((curTime - startTime) / 2000.0)));
     glUniform3fv(glGetUniformLocation(programID, "cameraPos"), 1, glm::value_ptr(cameraPos));
     glUniform1f(glGetUniformLocation(programID, "pointLightPow"), pointLight.power);
-    glUniform3fv(glGetUniformLocation(programID, "dirLightDirection"), 1, glm::value_ptr(directionalLight.direction));
-    glUniform1f(glGetUniformLocation(programID, "dirLightPow"), directionalLight.power);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
-    glUniform1i(ShadowMapID, 0);
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, depthTexture);
+//    glUniform1i(ShadowMapID, 0);
 
-    staticObject.draw();
-    dynamicObject.draw();
+//    staticObject.draw();
+//    dynamicObject.draw();
     planeObject.draw();
 }
+
