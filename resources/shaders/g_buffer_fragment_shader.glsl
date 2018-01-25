@@ -17,6 +17,6 @@ layout(location = 3) out vec3 position;
 void main() {
     diffuseColor = objDC;
     specularColor = objSC;
-    normal = n;
-    position = pos;
+    normal = (n + 1) / 2;
+    position = (pos + 5) / 10;
 }

@@ -58,18 +58,15 @@ private:
                                     [](double time) -> glm::vec3 {
                                         return glm::vec3(0, -1, 0);
                                     });
-    PointLight pointLight = PointLight(0.5,
-                                       [](double time) -> glm::vec3 {
-                                           return glm::vec3(sin(time), 1, cos(time));
-                                       });
-    GLint matrixVPID;
+    PointLight pointLight = PointLight(
+            Object3D("../resources/sphere.obj", glm::vec3(1, 1, 1), glm::vec3(1, 1, 1),
+                     [](double time) -> glm::vec3 {
+                         return glm::vec3(sin(time), 1, cos(time));
+                     }));
 
-    GLuint quad_VertexArrayID;
+    GLuint vertexArrayID;
     GLuint vertexBufferID;
     GLuint drawGBufferProgramID;
-
-//    int currentTexture = 0;
-
 };
 
 

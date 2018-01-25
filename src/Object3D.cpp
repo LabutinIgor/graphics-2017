@@ -33,11 +33,19 @@ Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specu
 }
 
 glm::mat4 Object3D::getModelMatrix(double time) {
-    return glm::translate(glm::mat4(1), trajectory(time));
+    return glm::translate(glm::scale(glm::mat4(1), glm::vec3(scale, scale, scale)), trajectory(time));
 }
 
-void Object3D::init(GLuint programGBufferID) {
-    this->programGBufferID = programGBufferID;
+
+glm::vec3 Object3D::getPos() {
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+    return trajectory((curTime - startTime) / 2000.0);
+}
+
+void Object3D::init(float scale) {
+    this->scale = scale;
     glGenVertexArrays(1, &verticesID);
     glBindVertexArray(verticesID);
 
@@ -59,7 +67,7 @@ void Object3D::init(GLuint programGBufferID) {
     startTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 }
 
-void Object3D::drawToGBuffer() {
+void Object3D::draw(GLuint programID) {
     struct timeval tp;
     gettimeofday(&tp, NULL);
     long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
@@ -74,9 +82,9 @@ void Object3D::drawToGBuffer() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     modelMatrix = getModelMatrix((curTime - startTime) / 2000.0);
-    glUniformMatrix4fv(glGetUniformLocation(programGBufferID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniform3fv(glGetUniformLocation(programGBufferID, "objDC"), 1, glm::value_ptr(diffuseColor));
-    glUniform3fv(glGetUniformLocation(programGBufferID, "objSC"), 1, glm::value_ptr(specularColor));
+    glUniformMatrix4fv(glGetUniformLocation(programID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniform3fv(glGetUniformLocation(programID, "objDC"), 1, glm::value_ptr(diffuseColor));
+    glUniform3fv(glGetUniformLocation(programID, "objSC"), 1, glm::value_ptr(specularColor));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idsID);
     glDrawElements(GL_TRIANGLES, 3 * ids.size(), GL_UNSIGNED_INT, nullptr);

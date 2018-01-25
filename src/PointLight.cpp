@@ -1,9 +1,13 @@
 
 #include "PointLight.h"
 
-PointLight::PointLight(float power, glm::vec3 (* trajectory)(double)) :
-        power(power), trajectory(trajectory) {}
+PointLight::PointLight(Object3D obj) : obj(obj) {}
 
-void PointLight::draw() {
+void PointLight::init() {
+    obj.init(2 * sqrt(fmax(obj.diffuseColor.r, fmax(obj.diffuseColor.g, obj.diffuseColor.b))));
+}
 
+void PointLight::draw(GLuint programID) {
+    glUniform3fv(glGetUniformLocation(programID, "pointLightPos"), 1, glm::value_ptr(obj.getPos()));
+    obj.draw(programID);
 }

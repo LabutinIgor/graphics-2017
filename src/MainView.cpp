@@ -6,7 +6,7 @@
 
 MainView::MainView() {}
 
-int currentTexture = 0;
+int currentTexture = -1;
 
 void MainView::show() {
     initGlfwWindow();
@@ -46,13 +46,14 @@ void MainView::show() {
 
     programID = loadShaders("../resources/shaders/vertex_shader.glsl", "../resources/shaders/fragment_shader.glsl");
 
-    staticObject.init(programGBufferID);
-    dynamicObject.init(programGBufferID);
-    sceneObject.init(programGBufferID);
+    staticObject.init();
+    dynamicObject.init();
+    sceneObject.init();
+    pointLight.init();
 
 
-    glGenVertexArrays(1, &quad_VertexArrayID);
-    glBindVertexArray(quad_VertexArrayID);
+    glGenVertexArrays(1, &vertexArrayID);
+    glBindVertexArray(vertexArrayID);
     static const GLfloat vertexBuffer[] = {
             -1.0f, -1.0f, 0.0f,
             1.0f, -1.0f, 0.0f,
@@ -171,23 +172,15 @@ void MainView::drawToGBuffer() {
     glm::mat4 viewMatrix = getViewMatrix();
     glm::mat4 matrixVP = projectionMatrix * viewMatrix;
 
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-
     glm::mat4 invViewMatr = glm::inverse(viewMatrix);
     glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
 
     glUniformMatrix4fv(glGetUniformLocation(programGBufferID, "matrixVP"), 1, GL_FALSE, &matrixVP[0][0]);
-
-    glUniform3fv(glGetUniformLocation(programGBufferID, "pointLightPos"), 1,
-                 glm::value_ptr(pointLight.trajectory((curTime - startTime) / 2000.0)));
     glUniform3fv(glGetUniformLocation(programGBufferID, "cameraPos"), 1, glm::value_ptr(cameraPos));
-    glUniform1f(glGetUniformLocation(programGBufferID, "pointLightPow"), pointLight.power);
 
-    staticObject.drawToGBuffer();
-    dynamicObject.drawToGBuffer();
-    sceneObject.drawToGBuffer();
+    staticObject.draw(programGBufferID);
+    dynamicObject.draw(programGBufferID);
+    sceneObject.draw(programGBufferID);
     buffer.unbind();
 }
 
@@ -221,15 +214,22 @@ void MainView::drawToScreen() {
     glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(2));
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(3));
+
+    computeMatricesFromInputs();
+    glm::mat4 projectionMatrix = getProjectionMatrix();
+    glm::mat4 viewMatrix = getViewMatrix();
+    glm::mat4 matrixVP = projectionMatrix * viewMatrix;
+
+    glm::mat4 invViewMatr = glm::inverse(viewMatrix);
+    glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
+
+    glUniformMatrix4fv(glGetUniformLocation(programID, "matrixVP"), 1, GL_FALSE, &matrixVP[0][0]);
+    glUniform3fv(glGetUniformLocation(programID, "cameraPos"), 1, glm::value_ptr(cameraPos));
+
     glUniform1i(glGetUniformLocation(programID, "textureDC"), 0);
     glUniform1i(glGetUniformLocation(programID, "textureSC"), 1);
     glUniform1i(glGetUniformLocation(programID, "textureNormals"), 2);
     glUniform1i(glGetUniformLocation(programID, "texturePositions"), 3);
 
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDisableVertexAttribArray(0);
+    pointLight.draw(programID);
 }
