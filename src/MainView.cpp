@@ -7,12 +7,10 @@
 MainView::MainView() {}
 
 int currentTexture = -1;
+int cntLights = 5;
 
-void MainView::show() {
-    initGlfwWindow();
-    initGlew();
-    initWindow(window);
-    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+void callBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (action == GLFW_PRESS) {
         switch (key) {
             case GLFW_KEY_1:
                 currentTexture = -1;
@@ -29,12 +27,25 @@ void MainView::show() {
             case GLFW_KEY_5:
                 currentTexture = 3;
                 break;
+            case GLFW_KEY_Q:
+                cntLights--;
+                break;
+            case GLFW_KEY_W:
+                cntLights++;
+                break;
             default:
                 break;
         }
-    });
+    }
+}
 
-    glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
+void MainView::show() {
+    initGlfwWindow();
+    initGlew();
+    initWindow(window);
+    glfwSetKeyCallback(window, &callBack);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
@@ -49,8 +60,8 @@ void MainView::show() {
     staticObject.init();
     dynamicObject.init();
     sceneObject.init();
-    pointLight.init();
 
+    initLights();
 
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
@@ -141,6 +152,13 @@ void MainView::initGlew() {
 }
 
 void MainView::draw() {
+    while (lights.size() > cntLights) {
+        lights.pop_back();
+    }
+    while (lights.size() < cntLights) {
+        lights.push_back(randomLight());
+        lights.back().init();
+    }
     drawToGBuffer();
     if (currentTexture == -1) {
         drawToScreen();
@@ -204,6 +222,9 @@ void MainView::drawGBufferToScreen() {
 void MainView::drawToScreen() {
     glViewport(0, 0, 1024, 768);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE);
     glUseProgram(programID);
 
     glActiveTexture(GL_TEXTURE0);
@@ -231,5 +252,37 @@ void MainView::drawToScreen() {
     glUniform1i(glGetUniformLocation(programID, "textureNormals"), 2);
     glUniform1i(glGetUniformLocation(programID, "texturePositions"), 3);
 
-    pointLight.draw(programID);
+    for (PointLight& light : lights) {
+        light.draw(programID);
+    }
+}
+
+void MainView::initLights() {
+    lights.push_back(PointLight(
+            Object3D("../resources/sphere.obj", glm::vec3(0.8, 0.8, 0.8), glm::vec3(0.8, 0.8, 0.8),
+                     [](double time) -> glm::vec3 {
+                         return glm::vec3(0.5 * sin(time), 0.5, 0.5 * cos(time));
+                     })));
+    for (int i = 0; i < cntLights; i++) {
+        lights.push_back(randomLight());
+    }
+
+    for (PointLight& light : lights) {
+        light.init();
+    }
+}
+
+PointLight MainView::randomLight() {
+    float pow = (rand() % 10) / 10.0;
+    float d = 4 * (rand() % 10) / 10.0 - 2;
+    float posx = 4 * (rand() % 10) / 10.0 - 2;
+    float posy = 4 * (rand() % 10) / 10.0 - 2;
+    float posz = 4 * (rand() % 10) / 10.0 - 2;
+    return PointLight(
+            Object3D("../resources/sphere.obj", glm::vec3(pow, pow, pow), glm::vec3(pow, pow, pow),
+                     [posx, posy, posz, d](double time) -> glm::vec3 {
+                         return glm::vec3(posx + d * sin(time),
+                                          posy,
+                                          posz + d * cos(time));
+                     }));
 }

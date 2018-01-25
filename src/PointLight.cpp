@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "PointLight.h"
 
 PointLight::PointLight(Object3D obj) : obj(obj) {}

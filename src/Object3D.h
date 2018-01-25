@@ -15,7 +15,8 @@
 
 class Object3D {
 public:
-    Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor, glm::vec3(* trajectory)(double));
+    Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor,
+             std::function<glm::vec3(double)> trajectory);
     glm::mat4 getModelMatrix(double time);
     glm::vec3 getPos();
     void init(float scale = 1);
@@ -28,7 +29,7 @@ private:
     std::vector<glm::vec3> pos;
     std::vector<glm::uvec3> ids;
     std::vector<glm::vec3> normals;
-    glm::vec3 (* trajectory)(double);
+    std::function<glm::vec3(double)> trajectory;
 
     void calcNormals();
     GLuint verticesID;

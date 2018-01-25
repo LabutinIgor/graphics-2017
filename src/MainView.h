@@ -37,6 +37,8 @@ private:
     void drawGBufferToScreen();
     void drawToScreen();
     void initGBuffer();
+    void initLights();
+    PointLight randomLight();
 
     GLFWwindow* window;
     GLuint programID;
@@ -58,15 +60,10 @@ private:
                                     [](double time) -> glm::vec3 {
                                         return glm::vec3(0, -1, 0);
                                     });
-    PointLight pointLight = PointLight(
-            Object3D("../resources/sphere.obj", glm::vec3(1, 1, 1), glm::vec3(1, 1, 1),
-                     [](double time) -> glm::vec3 {
-                         return glm::vec3(sin(time), 1, cos(time));
-                     }));
-
     GLuint vertexArrayID;
     GLuint vertexBufferID;
     GLuint drawGBufferProgramID;
+    std::vector<PointLight> lights;
 };
 
 

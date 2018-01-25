@@ -4,7 +4,7 @@
 #include "Object3D.h"
 
 Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor,
-                   glm::vec3 (* trajectory)(double)) : diffuseColor(diffuseColor),
+                   std::function<glm::vec3 (double)> trajectory) : diffuseColor(diffuseColor),
                                                        specularColor(specularColor),
                                                        trajectory(trajectory) {
     std::ifstream in(fileName);
