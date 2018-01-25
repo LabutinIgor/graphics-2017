@@ -7,7 +7,7 @@
 MainView::MainView() {}
 
 int currentTexture = -1;
-int cntLights = 5;
+int cntLights = 10;
 
 void callBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS) {
@@ -171,6 +171,7 @@ void MainView::draw() {
 }
 
 void MainView::drawToGBuffer() {
+    glDisable(GL_BLEND);
     GLenum buffers[] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT,
                         GL_COLOR_ATTACHMENT3_EXT};
     buffer.bind();
@@ -203,6 +204,8 @@ void MainView::drawToGBuffer() {
 }
 
 void MainView::drawGBufferToScreen() {
+    glDisable(GL_BLEND);
+
     glViewport(0, 0, 1024, 768);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(drawGBufferProgramID);
@@ -220,11 +223,11 @@ void MainView::drawGBufferToScreen() {
 }
 
 void MainView::drawToScreen() {
-    glViewport(0, 0, 1024, 768);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
+    glViewport(0, 0, 1024, 768);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID);
 
     glActiveTexture(GL_TEXTURE0);
@@ -263,9 +266,6 @@ void MainView::initLights() {
                      [](double time) -> glm::vec3 {
                          return glm::vec3(0.5 * sin(time), 0.5, 0.5 * cos(time));
                      })));
-    for (int i = 0; i < cntLights; i++) {
-        lights.push_back(randomLight());
-    }
 
     for (PointLight& light : lights) {
         light.init();
@@ -274,10 +274,10 @@ void MainView::initLights() {
 
 PointLight MainView::randomLight() {
     float pow = (rand() % 10) / 10.0;
-    float d = 4 * (rand() % 10) / 10.0 - 2;
-    float posx = 4 * (rand() % 10) / 10.0 - 2;
-    float posy = 4 * (rand() % 10) / 10.0 - 2;
-    float posz = 4 * (rand() % 10) / 10.0 - 2;
+    float d = 6 * (rand() % 10) / 10.0 - 3;
+    float posx = 6 * (rand() % 10) / 10.0 - 3;
+    float posy = 6 * (rand() % 10) / 10.0 - 3;
+    float posz = 6 * (rand() % 10) / 10.0 - 3;
     return PointLight(
             Object3D("../resources/sphere.obj", glm::vec3(pow, pow, pow), glm::vec3(pow, pow, pow),
                      [posx, posy, posz, d](double time) -> glm::vec3 {
