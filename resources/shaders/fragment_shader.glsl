@@ -1,29 +1,23 @@
 #version 330 core
 
+in vec3 pos;
+in vec3 n;
+
+uniform vec3 cameraPos;
 uniform vec3 objDC;
 uniform vec3 objSC;
-uniform vec3 cameraPos;
 uniform vec3 pointLightPos;
+uniform vec3 dirLightDirection;
+uniform sampler2DShadow shadowMap;
 
-uniform sampler2D textureDC;
-uniform sampler2D textureSC;
-uniform sampler2D textureNormals;
-uniform sampler2D texturePositions;
-
-layout(location = 0) out vec3 color;
-
+out vec4 color;
 
 void main() {
-    vec2 texturePos = vec2(gl_FragCoord.x / 1024, gl_FragCoord.y / 768);
-    vec3 n = 2 * texture(textureNormals, texturePos).xyz - 1;
-    vec3 DC = texture(textureDC, texturePos).xyz;
-    vec3 SC = texture(textureSC, texturePos).xyz;
-    vec3 pos = 10 * texture(texturePositions, texturePos).xyz - 5;
-
     vec3 l = normalize(pointLightPos - pos);
     vec3 v = normalize(cameraPos - pos);
     vec3 h = normalize(l + v);
-    vec3 colorDiffuse = clamp(dot(n, l), 0, 1) * objDC * DC / pow(length(pointLightPos - pos), 2.0);
-    vec3 colorSpecular = pow(clamp(dot(n, h), 0, 1), 30.0f) * objSC * SC;
-	color = colorDiffuse + colorSpecular;
+    vec3 colorDiffuse = clamp(dot(n, l), 0, 1) * objDC / pow(length(pointLightPos - pos), 2);
+    vec3 colorSpecular = pow(clamp(dot(n, h), 0, 1), 30.0f) * objSC;
+
+	color = vec4((colorDiffuse + colorSpecular) / 2, 1);
 }

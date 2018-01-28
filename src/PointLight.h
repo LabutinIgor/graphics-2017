@@ -16,7 +16,6 @@ public:
     void init();
     void draw(GLuint programID);
 
-private:
     Object3D obj;
 };
 

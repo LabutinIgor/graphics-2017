@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(Deferred)
+project(GodRays)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -47,7 +47,7 @@ add_library(GLEW STATIC
 target_link_libraries(GLEW ${OPENGL_LIBRARY} ${EXTRA_LIBS})
 
 
-add_executable(Deferred
+add_executable(GodRays
         src/main.cpp
         src/controls.cpp
         src/controls.hpp
@@ -63,4 +63,4 @@ add_executable(Deferred
         external/FrameBuffer.h
         )
 
-target_link_libraries(Deferred ${OPENGL_LIBRARY} glfw GLEW)
+target_link_libraries(GodRays ${OPENGL_LIBRARY} glfw GLEW)

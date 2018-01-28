@@ -7,7 +7,6 @@
 MainView::MainView() {}
 
 int currentTexture = -1;
-int cntLights = 10;
 
 void callBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS) {
@@ -26,12 +25,6 @@ void callBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
                 break;
             case GLFW_KEY_5:
                 currentTexture = 3;
-                break;
-            case GLFW_KEY_Q:
-                cntLights--;
-                break;
-            case GLFW_KEY_W:
-                cntLights++;
                 break;
             default:
                 break;
@@ -133,7 +126,7 @@ void MainView::initGlfwWindow() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(1024, 768, "Deferred", NULL, NULL);
+    window = glfwCreateWindow(1024, 768, "GodRays", NULL, NULL);
     if (window == NULL) {
         std::cerr << "Failed to open GLFW window.\n";
         glfwTerminate();
@@ -152,13 +145,6 @@ void MainView::initGlew() {
 }
 
 void MainView::draw() {
-    while (lights.size() > cntLights) {
-        lights.pop_back();
-    }
-    while (lights.size() < cntLights) {
-        lights.push_back(randomLight());
-        lights.back().init();
-    }
     drawToGBuffer();
     if (currentTexture == -1) {
         drawToScreen();
@@ -223,21 +209,14 @@ void MainView::drawGBufferToScreen() {
 }
 
 void MainView::drawToScreen() {
-    glEnable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_ONE, GL_ONE);
     glViewport(0, 0, 1024, 768);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(programID);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(0));
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(1));
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(2));
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(3));
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(programID);
 
     computeMatricesFromInputs();
     glm::mat4 projectionMatrix = getProjectionMatrix();
@@ -247,42 +226,23 @@ void MainView::drawToScreen() {
     glm::mat4 invViewMatr = glm::inverse(viewMatrix);
     glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
 
+    glUniform3fv(glGetUniformLocation(programID, "pointLightPos"), 1, glm::value_ptr(lights[0].obj.getPos()));
     glUniformMatrix4fv(glGetUniformLocation(programID, "matrixVP"), 1, GL_FALSE, &matrixVP[0][0]);
     glUniform3fv(glGetUniformLocation(programID, "cameraPos"), 1, glm::value_ptr(cameraPos));
 
-    glUniform1i(glGetUniformLocation(programID, "textureDC"), 0);
-    glUniform1i(glGetUniformLocation(programID, "textureSC"), 1);
-    glUniform1i(glGetUniformLocation(programID, "textureNormals"), 2);
-    glUniform1i(glGetUniformLocation(programID, "texturePositions"), 3);
-
-    for (PointLight& light : lights) {
-        light.draw(programID);
-    }
+    staticObject.draw(programID);
+    dynamicObject.draw(programID);
+    sceneObject.draw(programID);
 }
 
 void MainView::initLights() {
     lights.push_back(PointLight(
             Object3D("../resources/sphere.obj", glm::vec3(0.8, 0.8, 0.8), glm::vec3(0.8, 0.8, 0.8),
                      [](double time) -> glm::vec3 {
-                         return glm::vec3(0.5 * sin(time), 0.5, 0.5 * cos(time));
+                         return glm::vec3(0.5 * sin(time), 5, 0.5 * cos(time));
                      })));
 
     for (PointLight& light : lights) {
         light.init();
     }
-}
-
-PointLight MainView::randomLight() {
-    float pow = (rand() % 10) / 10.0;
-    float d = 6 * (rand() % 10) / 10.0 - 3;
-    float posx = 6 * (rand() % 10) / 10.0 - 3;
-    float posy = 6 * (rand() % 10) / 10.0 - 3;
-    float posz = 6 * (rand() % 10) / 10.0 - 3;
-    return PointLight(
-            Object3D("../resources/sphere.obj", glm::vec3(pow, pow, pow), glm::vec3(pow, pow, pow),
-                     [posx, posy, posz, d](double time) -> glm::vec3 {
-                         return glm::vec3(posx + d * sin(time),
-                                          posy,
-                                          posz + d * cos(time));
-                     }));
 }

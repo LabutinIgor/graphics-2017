@@ -38,7 +38,6 @@ private:
     void drawToScreen();
     void initGBuffer();
     void initLights();
-    PointLight randomLight();
 
     GLFWwindow* window;
     GLuint programID;
@@ -50,11 +49,11 @@ private:
 
     Object3D staticObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(1, 0, 0), glm::vec3(1, 0, 0),
                                      [](double time) -> glm::vec3 {
-                                         return glm::vec3(0, 0, 0);
+                                         return glm::vec3(0, 4, 0);
                                      });
     Object3D dynamicObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
                                       [](double time) -> glm::vec3 {
-                                          return glm::vec3(0.3 * sin(time), 0.3 * cos(time), 0);
+                                          return glm::vec3(0.3 * sin(time), 4 + 0.3 * cos(time), 0);
                                       });
     Object3D sceneObject = Object3D("../resources/sponza.obj", glm::vec3(0, 1, 0), glm::vec3(0, 0.5, 0),
                                     [](double time) -> glm::vec3 {
