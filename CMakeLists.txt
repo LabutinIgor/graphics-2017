@@ -22,14 +22,12 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             )
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-find_package(glm REQUIRED)
-include_directories(include ${GLM_INCLUDE_DIRS})
-
 add_subdirectory(external/glfw-3.1.2)
 
 include_directories(
         external/glfw-3.1.2/include/GLFW/
         external/glew-1.13.0/include/
+        external/glm-0.9.7.1/
 )
 
 ### GLEW ###
