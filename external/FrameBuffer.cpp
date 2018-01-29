@@ -7,7 +7,6 @@
 #include	"FrameBuffer.h"
 //#include	"libExt.h"
 #include	<stdlib.h>
-#include <OpenGL/OpenGL.h>
 #include <GL/glew.h>
 
 FrameBuffer :: FrameBuffer  ( int theWidth, int theHeight, int theFlags )

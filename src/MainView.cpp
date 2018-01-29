@@ -27,7 +27,6 @@ void MainView::show() {
     dynamicObject.init();
     dynamicObject2.init(20);
     sun.init(3);
-//    sky.init(3);
     sceneObject.init();
 
     glGenVertexArrays(1, &vertexArrayID);
@@ -121,11 +120,6 @@ void MainView::draw() {
     drawToGBuffer();
     drawGBufferToScreen();
     drawToScreen();
-//    if (currentTexture == -1) {
-//        drawToScreen();
-//    } else {
-//        drawGBufferToScreen();
-//    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -154,13 +148,12 @@ void MainView::drawToGBuffer() {
     glm::mat4 invViewMatr = glm::inverse(viewMatrix);
     glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
 
-    glUniformMatrix4fv(glGetUniformLocation(programGBufferID, "matrixVP"), 1, GL_FALSE, &matrixVP[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(programGBufferID, "matrixVP"), 1, GL_FALSE, glm::value_ptr(matrixVP));
     glUniform3fv(glGetUniformLocation(programGBufferID, "cameraPos"), 1, glm::value_ptr(cameraPos));
 
     staticObject.draw(programGBufferID);
     dynamicObject.draw(programGBufferID);
     sun.draw(programGBufferID);
-//    sky.draw(programGBufferID);
     dynamicObject2.draw(programGBufferID);
     sceneObject.draw(programGBufferID);
     buffer.unbind();
