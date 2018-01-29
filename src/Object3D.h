@@ -15,7 +15,7 @@
 
 class Object3D {
 public:
-    Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor,
+    Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor, glm::vec3 colorToGodRays,
              std::function<glm::vec3(double)> trajectory);
     glm::mat4 getModelMatrix(double time);
     glm::vec3 getPos();
@@ -24,6 +24,7 @@ public:
 
     glm::vec3 diffuseColor;
     glm::vec3 specularColor;
+    glm::vec3 colorToGodRays;
 
 private:
     std::vector<glm::vec3> pos;

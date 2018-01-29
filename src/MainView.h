@@ -37,7 +37,6 @@ private:
     void drawGBufferToScreen();
     void drawToScreen();
     void initGBuffer();
-    void initLights();
 
     GLFWwindow* window;
     GLuint programID;
@@ -45,24 +44,34 @@ private:
 
     FrameBuffer buffer = FrameBuffer(1024, 768, FrameBuffer::depth32);
 
-    long long startTime;
-
     Object3D staticObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(1, 0, 0), glm::vec3(1, 0, 0),
+                                     glm::vec3(0, 0, 0),
                                      [](double time) -> glm::vec3 {
-                                         return glm::vec3(0, 4, 0);
+                                         return glm::vec3(0, 1, 0);
                                      });
     Object3D dynamicObject = Object3D("../resources/stanford_bunny.obj", glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
+                                      glm::vec3(0, 0, 0),
                                       [](double time) -> glm::vec3 {
-                                          return glm::vec3(0.3 * sin(time), 4 + 0.3 * cos(time), 0);
+                                          return glm::vec3(0.3 * sin(time), 1 + 0.3 * cos(time), 0);
                                       });
+    Object3D dynamicObject2 = Object3D("../resources/stanford_bunny.obj", glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
+                                      glm::vec3(0, 0, 0),
+                                      [](double time) -> glm::vec3 {
+                                          return glm::vec3(10 + 0.5 * sin(time), 15 + 0.5 * cos(time), 1);
+                                      });
+    Object3D sun = Object3D("../resources/sphere.obj", glm::vec3(1, 1, 1), glm::vec3(0.3, 0.3, 0.3),
+                            glm::vec3(1, 1, 0),
+                            [](double time) -> glm::vec3 {
+                                return glm::vec3(17, 23, 1);
+                            });
     Object3D sceneObject = Object3D("../resources/sponza.obj", glm::vec3(0, 1, 0), glm::vec3(0, 0.5, 0),
+                                    glm::vec3(0, 0, 0),
                                     [](double time) -> glm::vec3 {
                                         return glm::vec3(0, -1, 0);
                                     });
     GLuint vertexArrayID;
     GLuint vertexBufferID;
     GLuint drawGBufferProgramID;
-    std::vector<PointLight> lights;
 };
 
 

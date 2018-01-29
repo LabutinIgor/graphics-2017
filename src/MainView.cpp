@@ -38,7 +38,7 @@ void MainView::show() {
     initWindow(window);
     glfwSetKeyCallback(window, &callBack);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.01f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
@@ -52,9 +52,9 @@ void MainView::show() {
 
     staticObject.init();
     dynamicObject.init();
+    dynamicObject2.init(20);
+    sun.init(3);
     sceneObject.init();
-
-    initLights();
 
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
@@ -74,10 +74,6 @@ void MainView::show() {
                                        "../resources/shaders/output_g_buffer_fragment_shader.glsl");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, 1024, 768);
-
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    startTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
     while (glfwWindowShouldClose(window) == 0) {
         draw();
@@ -185,6 +181,8 @@ void MainView::drawToGBuffer() {
 
     staticObject.draw(programGBufferID);
     dynamicObject.draw(programGBufferID);
+    sun.draw(programGBufferID);
+    dynamicObject2.draw(programGBufferID);
     sceneObject.draw(programGBufferID);
     buffer.unbind();
 }
@@ -218,6 +216,15 @@ void MainView::drawToScreen() {
 
     glUseProgram(programID);
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(0));
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(1));
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(2));
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(3));
+
     computeMatricesFromInputs();
     glm::mat4 projectionMatrix = getProjectionMatrix();
     glm::mat4 viewMatrix = getViewMatrix();
@@ -226,23 +233,17 @@ void MainView::drawToScreen() {
     glm::mat4 invViewMatr = glm::inverse(viewMatrix);
     glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
 
-    glUniform3fv(glGetUniformLocation(programID, "pointLightPos"), 1, glm::value_ptr(lights[0].obj.getPos()));
-    glUniformMatrix4fv(glGetUniformLocation(programID, "matrixVP"), 1, GL_FALSE, &matrixVP[0][0]);
+    glUniform3fv(glGetUniformLocation(programID, "lPos"), 1, glm::value_ptr(sun.getPos()));
+    glUniformMatrix4fv(glGetUniformLocation(programID, "matrixVP"), 1, GL_FALSE, glm::value_ptr(matrixVP));
     glUniform3fv(glGetUniformLocation(programID, "cameraPos"), 1, glm::value_ptr(cameraPos));
+
+    glUniform1i(glGetUniformLocation(programID, "textureColorGR"), 0);
+    glUniform1i(glGetUniformLocation(programID, "textureNormals"), 1);
+    glUniform1i(glGetUniformLocation(programID, "texturePositions"), 2);
 
     staticObject.draw(programID);
     dynamicObject.draw(programID);
+    sun.draw(programID);
+    dynamicObject2.draw(programID);
     sceneObject.draw(programID);
-}
-
-void MainView::initLights() {
-    lights.push_back(PointLight(
-            Object3D("../resources/sphere.obj", glm::vec3(0.8, 0.8, 0.8), glm::vec3(0.8, 0.8, 0.8),
-                     [](double time) -> glm::vec3 {
-                         return glm::vec3(0.5 * sin(time), 5, 0.5 * cos(time));
-                     })));
-
-    for (PointLight& light : lights) {
-        light.init();
-    }
 }

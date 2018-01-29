@@ -3,10 +3,11 @@
 #include <iostream>
 #include "Object3D.h"
 
-Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor,
-                   std::function<glm::vec3 (double)> trajectory) : diffuseColor(diffuseColor),
-                                                       specularColor(specularColor),
-                                                       trajectory(trajectory) {
+Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor, glm::vec3 colorToGodRays,
+                   std::function<glm::vec3(double)> trajectory) : diffuseColor(diffuseColor),
+                                                                  specularColor(specularColor),
+                                                                  colorToGodRays(colorToGodRays),
+                                                                  trajectory(trajectory) {
     std::ifstream in(fileName);
     std::string l;
     while (getline(in, l)) {
@@ -33,7 +34,7 @@ Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specu
 }
 
 glm::mat4 Object3D::getModelMatrix(double time) {
-    return glm::translate(glm::scale(glm::mat4(1), glm::vec3(scale, scale, scale)), trajectory(time));
+    return glm::scale(glm::translate(glm::mat4(1), trajectory(time)), glm::vec3(scale, scale, scale));
 }
 
 
@@ -85,6 +86,7 @@ void Object3D::draw(GLuint programID) {
     glUniformMatrix4fv(glGetUniformLocation(programID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
     glUniform3fv(glGetUniformLocation(programID, "objDC"), 1, glm::value_ptr(diffuseColor));
     glUniform3fv(glGetUniformLocation(programID, "objSC"), 1, glm::value_ptr(specularColor));
+    glUniform3fv(glGetUniformLocation(programID, "colToGR"), 1, glm::value_ptr(colorToGodRays));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idsID);
     glDrawElements(GL_TRIANGLES, 3 * ids.size(), GL_UNSIGNED_INT, nullptr);
