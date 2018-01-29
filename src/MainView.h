@@ -41,6 +41,7 @@ private:
     GLFWwindow* window;
     GLuint programID;
     GLuint programGBufferID;
+    GLuint resProgramID;
 
     FrameBuffer buffer = FrameBuffer(1024, 768, FrameBuffer::depth32);
 

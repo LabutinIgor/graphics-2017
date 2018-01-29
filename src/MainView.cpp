@@ -6,39 +6,12 @@
 
 MainView::MainView() {}
 
-int currentTexture = -1;
-
-void callBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (action == GLFW_PRESS) {
-        switch (key) {
-            case GLFW_KEY_1:
-                currentTexture = -1;
-                break;
-            case GLFW_KEY_2:
-                currentTexture = 0;
-                break;
-            case GLFW_KEY_3:
-                currentTexture = 1;
-                break;
-            case GLFW_KEY_4:
-                currentTexture = 2;
-                break;
-            case GLFW_KEY_5:
-                currentTexture = 3;
-                break;
-            default:
-                break;
-        }
-    }
-}
-
 void MainView::show() {
     initGlfwWindow();
     initGlew();
     initWindow(window);
-    glfwSetKeyCallback(window, &callBack);
 
-    glClearColor(0.0f, 0.0f, 0.01f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
@@ -54,6 +27,7 @@ void MainView::show() {
     dynamicObject.init();
     dynamicObject2.init(20);
     sun.init(3);
+//    sky.init(3);
     sceneObject.init();
 
     glGenVertexArrays(1, &vertexArrayID);
@@ -74,6 +48,9 @@ void MainView::show() {
                                        "../resources/shaders/output_g_buffer_fragment_shader.glsl");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, 1024, 768);
+
+    resProgramID = loadShaders("../resources/shaders/res_vertex_shader.glsl",
+                               "../resources/shaders/res_fragment_shader.glsl");
 
     while (glfwWindowShouldClose(window) == 0) {
         draw();
@@ -142,11 +119,13 @@ void MainView::initGlew() {
 
 void MainView::draw() {
     drawToGBuffer();
-    if (currentTexture == -1) {
-        drawToScreen();
-    } else {
-        drawGBufferToScreen();
-    }
+    drawGBufferToScreen();
+    drawToScreen();
+//    if (currentTexture == -1) {
+//        drawToScreen();
+//    } else {
+//        drawGBufferToScreen();
+//    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -154,10 +133,9 @@ void MainView::draw() {
 
 void MainView::drawToGBuffer() {
     glDisable(GL_BLEND);
-    GLenum buffers[] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT,
-                        GL_COLOR_ATTACHMENT3_EXT};
+    GLenum buffers[] = {GL_COLOR_ATTACHMENT0_EXT};
     buffer.bind();
-    glDrawBuffers(4, buffers);
+    glDrawBuffers(1, buffers);
 
     glViewport(0, 0, 1024, 768);
 
@@ -182,6 +160,7 @@ void MainView::drawToGBuffer() {
     staticObject.draw(programGBufferID);
     dynamicObject.draw(programGBufferID);
     sun.draw(programGBufferID);
+//    sky.draw(programGBufferID);
     dynamicObject2.draw(programGBufferID);
     sceneObject.draw(programGBufferID);
     buffer.unbind();
@@ -189,41 +168,19 @@ void MainView::drawToGBuffer() {
 
 void MainView::drawGBufferToScreen() {
     glDisable(GL_BLEND);
-
+    GLenum buffers[] = {GL_COLOR_ATTACHMENT1_EXT};
+    buffer.bind();
+    glDrawBuffers(1, buffers);
     glViewport(0, 0, 1024, 768);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glUseProgram(drawGBufferProgramID);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(currentTexture));
-    glUniform1i(glGetUniformLocation(drawGBufferProgramID, "renderedTexture"), 0);
-
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDisableVertexAttribArray(0);
-}
-
-void MainView::drawToScreen() {
-    glViewport(0, 0, 1024, 768);
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glUseProgram(programID);
-
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(0));
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(1));
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(2));
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(3));
+    glUniform1i(glGetUniformLocation(drawGBufferProgramID, "renderedTexture"), 0);
 
     computeMatricesFromInputs();
     glm::mat4 projectionMatrix = getProjectionMatrix();
@@ -233,17 +190,61 @@ void MainView::drawToScreen() {
     glm::mat4 invViewMatr = glm::inverse(viewMatrix);
     glm::vec3 cameraPos = glm::vec3(invViewMatr[3][0], invViewMatr[3][1], invViewMatr[3][2]);
 
+    glUniform3fv(glGetUniformLocation(drawGBufferProgramID, "lPos"), 1, glm::value_ptr(sun.getPos()));
+    glUniformMatrix4fv(glGetUniformLocation(drawGBufferProgramID, "matrixVP"), 1, GL_FALSE, glm::value_ptr(matrixVP));
+
+
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDisableVertexAttribArray(0);
+    buffer.unbind();
+
+
+    GLenum buffers2[] = {GL_COLOR_ATTACHMENT2_EXT};
+    buffer.bind();
+    glDrawBuffers(1, buffers2);
+    glViewport(0, 0, 1024, 768);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(programID);
+
     glUniform3fv(glGetUniformLocation(programID, "lPos"), 1, glm::value_ptr(sun.getPos()));
     glUniformMatrix4fv(glGetUniformLocation(programID, "matrixVP"), 1, GL_FALSE, glm::value_ptr(matrixVP));
     glUniform3fv(glGetUniformLocation(programID, "cameraPos"), 1, glm::value_ptr(cameraPos));
-
-    glUniform1i(glGetUniformLocation(programID, "textureColorGR"), 0);
-    glUniform1i(glGetUniformLocation(programID, "textureNormals"), 1);
-    glUniform1i(glGetUniformLocation(programID, "texturePositions"), 2);
 
     staticObject.draw(programID);
     dynamicObject.draw(programID);
     sun.draw(programID);
     dynamicObject2.draw(programID);
     sceneObject.draw(programID);
+    buffer.unbind();
+}
+
+void MainView::drawToScreen() {
+    glDisable(GL_BLEND);
+    glViewport(0, 0, 1024, 768);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(resProgramID);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(1));
+    glUniform1i(glGetUniformLocation(resProgramID, "textureGR"), 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(2));
+    glUniform1i(glGetUniformLocation(resProgramID, "textureColor"), 1);
+
+
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDisableVertexAttribArray(0);
 }
