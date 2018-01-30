@@ -256,15 +256,15 @@ void MainView::drawToScreen() {
     glUniform1i(glGetUniformLocation(programID, "texturePositions"), 3);
 
     for (PointLight& light : lights) {
-        light.draw(programID);
+        light.draw(programID, glm::length(cameraPos - light.obj.getPos()) < 2.0);
     }
 }
 
 void MainView::initLights() {
     lights.push_back(PointLight(
-            Object3D("../resources/sphere.obj", glm::vec3(0.8, 0.8, 0.8), glm::vec3(0.8, 0.8, 0.8),
+            Object3D("../resources/sphere.obj", glm::vec3(0.3, 0.3, 0.3), glm::vec3(0.3, 0.3, 0.3),
                      [](double time) -> glm::vec3 {
-                         return glm::vec3(0.5 * sin(time), 0.5, 0.5 * cos(time));
+                         return glm::vec3(0.5 * sin(time), 0, 0.5 * cos(time));
                      })));
 
     for (PointLight& light : lights) {
@@ -273,7 +273,7 @@ void MainView::initLights() {
 }
 
 PointLight MainView::randomLight() {
-    float pow = (rand() % 10) / 10.0;
+    float pow = (rand() % 10) / 30.0;
     float d = 6 * (rand() % 10) / 10.0 - 3;
     float posx = 6 * (rand() % 10) / 10.0 - 3;
     float posy = 6 * (rand() % 10) / 10.0 - 3;
@@ -282,7 +282,7 @@ PointLight MainView::randomLight() {
             Object3D("../resources/sphere.obj", glm::vec3(pow, pow, pow), glm::vec3(pow, pow, pow),
                      [posx, posy, posz, d](double time) -> glm::vec3 {
                          return glm::vec3(posx + d * sin(time),
-                                          posy,
+                                          -0.5,
                                           posz + d * cos(time));
                      }));
 }

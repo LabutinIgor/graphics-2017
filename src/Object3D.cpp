@@ -4,9 +4,9 @@
 #include "Object3D.h"
 
 Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specularColor,
-                   std::function<glm::vec3 (double)> trajectory) : diffuseColor(diffuseColor),
-                                                       specularColor(specularColor),
-                                                       trajectory(trajectory) {
+                   std::function<glm::vec3(double)> trajectory) : diffuseColor(diffuseColor),
+                                                                  specularColor(specularColor),
+                                                                  trajectory(trajectory) {
     std::ifstream in(fileName);
     std::string l;
     while (getline(in, l)) {
@@ -33,7 +33,7 @@ Object3D::Object3D(const char* fileName, glm::vec3 diffuseColor, glm::vec3 specu
 }
 
 glm::mat4 Object3D::getModelMatrix(double time) {
-    return glm::translate(glm::scale(glm::mat4(1), glm::vec3(scale, scale, scale)), trajectory(time));
+    return glm::scale(glm::translate(glm::mat4(1), trajectory(time)), glm::vec3(scale, scale, scale));
 }
 
 
@@ -65,29 +65,52 @@ void Object3D::init(float scale) {
     struct timeval tp;
     gettimeofday(&tp, NULL);
     startTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+
+    glGenVertexArrays(1, &vertexArrayID);
+    glBindVertexArray(vertexArrayID);
+    static const GLfloat vertexBuffer[] = {
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            -1.0f, 1.0f, 0.0f,
+            -1.0f, 1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f,
+    };
+
+    glGenBuffers(1, &vertexBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexBuffer), vertexBuffer, GL_STATIC_DRAW);
 }
 
-void Object3D::draw(GLuint programID) {
+void Object3D::draw(GLuint programID, bool toFullScreen) {
     struct timeval tp;
     gettimeofday(&tp, NULL);
     long long curTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-
-    glBindVertexArray(verticesID);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, posID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, normalsID);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     modelMatrix = getModelMatrix((curTime - startTime) / 2000.0);
     glUniformMatrix4fv(glGetUniformLocation(programID, "matrixM"), 1, GL_FALSE, &modelMatrix[0][0]);
     glUniform3fv(glGetUniformLocation(programID, "objDC"), 1, glm::value_ptr(diffuseColor));
     glUniform3fv(glGetUniformLocation(programID, "objSC"), 1, glm::value_ptr(specularColor));
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idsID);
-    glDrawElements(GL_TRIANGLES, 3 * ids.size(), GL_UNSIGNED_INT, nullptr);
+    if (toFullScreen) {
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDisableVertexAttribArray(0);
+    } else {
+        glBindVertexArray(verticesID);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, posID);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, normalsID);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idsID);
+        glDrawElements(GL_TRIANGLES, 3 * ids.size(), GL_UNSIGNED_INT, nullptr);
+    }
 }
 
 void Object3D::calcNormals() {

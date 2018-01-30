@@ -20,7 +20,7 @@ public:
     glm::mat4 getModelMatrix(double time);
     glm::vec3 getPos();
     void init(float scale = 1);
-    void draw(GLuint programID);
+    void draw(GLuint programID, bool toFullScreen = false);
 
     glm::vec3 diffuseColor;
     glm::vec3 specularColor;
@@ -36,6 +36,8 @@ private:
     GLuint posID;
     GLuint idsID;
     GLuint normalsID;
+    GLuint vertexArrayID;
+    GLuint vertexBufferID;
 
     glm::mat4 modelMatrix;
     long long startTime;

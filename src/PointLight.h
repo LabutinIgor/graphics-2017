@@ -14,9 +14,7 @@ class PointLight {
 public:
     PointLight(Object3D obj);
     void init();
-    void draw(GLuint programID);
-
-private:
+    void draw(GLuint programID, bool toFullScreen = false);
     Object3D obj;
 };
 

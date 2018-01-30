@@ -23,7 +23,11 @@ void main() {
     vec3 l = normalize(pointLightPos - pos);
     vec3 v = normalize(cameraPos - pos);
     vec3 h = normalize(l + v);
-    vec3 colorDiffuse = clamp(dot(n, l), 0, 1) * objDC * DC / pow(length(pointLightPos - pos), 2.0);
-    vec3 colorSpecular = pow(clamp(dot(n, h), 0, 1), 30.0f) * objSC * SC;
-	color = colorDiffuse + colorSpecular;
+    vec3 colorDiffuse = vec3(0);
+    vec3 colorSpecular = vec3(0);
+    if (length(pointLightPos - pos) < 4 * sqrt(max(objDC.x, max(objDC.y, objDC.z))) - 0.1) {
+        colorDiffuse = clamp(dot(n, l), 0, 1) * objDC * DC / pow(length(pointLightPos - pos), 2.0);
+        colorSpecular = pow(clamp(dot(n, h), 0, 1), 30.0f) * objSC * SC;
+    }
+	color = colorDiffuse;// + colorSpecular;
 }
