@@ -4,7 +4,6 @@
 
 #include <glm/vec3.hpp>
 #include <GL/glew.h>
-#include <OpenGL/OpenGL.h>
 #include <sys/time.h>
 #include <vector>
 #include "Object3D.h"
