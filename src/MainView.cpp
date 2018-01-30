@@ -24,27 +24,18 @@ void MainView::show() {
     depthMatrixID = glGetUniformLocation(programShadowMapID, "matrixVP");
 
 
-    glGenFramebuffers(1, &framebufferID);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+    unsigned posTexture = buffer.createColorTexture(GL_RGBA, GL_RGBA8, GL_CLAMP, FrameBuffer::filterLinear);
 
-    glGenTextures(1, &depthTexture);
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+    buffer.create();
+    buffer.bind();
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+    if (!buffer.attachColorTexture(GL_TEXTURE_2D, posTexture, 0))
+        std::cerr << "buffer error with color attachment\n";
 
-    glDrawBuffer(GL_NONE);
+    if (!buffer.isOk())
+        std::cerr << "Error with framebuffer\n";
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Error in Framebuffer\n";
-        exit(1);
-    }
+    buffer.unbind();
 
 
     programID = loadShaders("../resources/shaders/vertex_shader.glsl", "../resources/shaders/fragment_shader.glsl");
@@ -176,8 +167,12 @@ void MainView::draw() {
 }
 
 void MainView::drawToShadowMap() {
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-    glViewport(0, 0, 1024, 1024);
+    glDisable(GL_BLEND);
+    GLenum buffers[] = {GL_COLOR_ATTACHMENT0_EXT};
+    buffer.bind();
+    glDrawBuffers(1, buffers);
+
+    glViewport(0, 0, 1024, 768);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -192,11 +187,12 @@ void MainView::drawToShadowMap() {
     staticObject.drawToShadowMap();
     dynamicObject.drawToShadowMap();
     planeObject.drawToShadowMap();
+    buffer.unbind();
 }
 
 void MainView::drawToScreen() {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, 1024, 1024);
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, 1024, 768);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -227,7 +223,7 @@ void MainView::drawToScreen() {
     glUniform1f(glGetUniformLocation(programID, "dirLightPow"), directionalLight.power);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glBindTexture(GL_TEXTURE_2D, buffer.getColorBuffer(0));
     glUniform1i(ShadowMapID, 0);
 
     staticObject.draw();

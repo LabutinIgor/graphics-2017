@@ -1,7 +1,9 @@
 #version 330
 
-layout(location = 0) out float dep;
+in vec4 pos;
+
+layout(location = 0) out vec3 p;
 
 void main() {
-    dep = 0.5;
+    p = 0.5 * pos.xyz / pos.w + 0.5;
 }

@@ -16,6 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <FrameBuffer.h>
 
 #include "load_shaders.h"
 #include "MainView.h"
@@ -46,6 +47,8 @@ private:
     GLuint programID;
     GLuint programShadowMapID;
 
+
+    FrameBuffer buffer = FrameBuffer(1024, 768, FrameBuffer::depth32);;
     glm::mat4 projectionMatrix;
     glm::mat4 cameraMatrix;
     glm::mat4 scaleMatrix;

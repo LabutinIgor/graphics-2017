@@ -32,7 +32,7 @@ void main() {
 
 	float bias = 0.005;
     float visibility = 1.0;
-    if (0.5 * (1 + shadowCoord.z) - texture(shadowMap, 0.5 * (1 + shadowCoord.xy)).x > bias) {
+    if (0.5 * (1 + shadowCoord.z) - texture(shadowMap, 0.5 * (1 + shadowCoord.xy)).z > bias) {
        visibility = 0.0;
     }
 

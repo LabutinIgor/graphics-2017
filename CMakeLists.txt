@@ -28,6 +28,7 @@ include_directories(
         external/glfw-3.1.2/include/GLFW/
         external/glew-1.13.0/include/
         external/glm-0.9.7.1/
+        external/
 )
 
 ### GLEW ###
@@ -55,6 +56,8 @@ add_executable(Scene3D
         src/PointLight.cpp
         src/PointLight.h
         src/DirectionalLight.cpp
-        src/DirectionalLight.h)
+        src/DirectionalLight.h
+        external/FrameBuffer.h
+        external/FrameBuffer.cpp)
 
 target_link_libraries(Scene3D ${OPENGL_LIBRARY} glfw GLEW)
